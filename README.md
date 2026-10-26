@@ -1,56 +1,100 @@
-# Project CBPM · 2-D helium gas
+# 2D Helium Gas & Maxwell's Demon
 
-An educational hard-disk simulation of helium atoms, elastic collisions, thermal speeds, and an idealized Maxwell-demon gate. The project began as a **first-year 2024 student submission** for *Introduction to Computer-Based Physical Modeling* in the International Physics Studies Program (IPSP) at Leipzig University. The code and documentation on this branch are a later portfolio improvement; they are not part of the original coursework.
+**A particle simulation of elastic collisions, thermal motion, and an idealized Maxwell's demon gate.**
 
-![Short animation of the 2-D gas and central gate](assets/simulation.gif)
+**First-year final project · Introduction to Computer-Based Physical Modeling · International Physics Studies Program (IPSP), Leipzig University**
 
-## What it demonstrates
+This project began as my **2024 course submission**. I later revisited the numerical model, fixed collision and boundary-handling problems, added regression tests, and made the experiment reproducible for my programming and computational-physics portfolio. The updated model is **not** the original submission or a peer-reviewed research simulation.
 
-- Equal-mass, elastic hard-disk impacts with momentum and kinetic-energy conservation.
-- Radius-aware reflecting box walls and a central aperture. A demon rule acts only when a particle crosses the divider: fast particles go left-to-right and slow particles right-to-left.
-- A reproducible 2-D thermal initialization and the **2-D Maxwell–Boltzmann (Rayleigh) speed density**, `f(v) = m v/(k_B T) exp[-m v²/(2 k_B T)]`.
-- Kinetic temperature from equipartition in two dimensions (`E/N = k_B T` at equilibrium), with center-of-mass motion removed for temperature estimates.
-- Adaptive ballistic substeps, a neighboring-cell broad phase, overlap correction, and collision impulses only for approaching pairs.
+## Simulation preview
 
-The demon is an educational idealization. Its measurement, memory, and reset costs are not modeled, so the temperature sorting does not violate the second law.
+![Animated 2D helium particles interacting with a central Maxwell's demon gate](assets/simulation.gif)
 
-## Results
+[Open the animation at full size](assets/simulation.gif) · [View the simulation source](helium_demon.py) · [View the animation generator](scripts/generate_artifacts.py)
 
-The seed-fixed plots below compare a finite random sample with the theoretical 2-D speed density and track energy and regional temperatures in a gate run.
+The blue disks represent helium particles moving inside a two-dimensional container. The central divider has a narrow opening; an idealized demon selectively permits crossing according to particle speed and direction. The displayed **left** and **right** temperatures are calculated from the particles currently in each compartment.
 
-| Speed distribution | Total kinetic energy | Regional temperatures |
-|---|---|---|
-| ![2-D speed distribution](assets/speed_distribution.png) | ![Kinetic energy over time](assets/kinetic_energy.png) | ![Regional temperature over time](assets/regional_temperature.png) |
+**About playback:** This is a short, automatically looping visualization. The current GIF advances **10 simulation time steps per displayed frame** and plays at **20 frames per second**, which can make the movement look too fast. Playback speed is not a physical time scale. The animation is generated from the simulation; it is not a separate hand-drawn visualization.
 
-## Run on Ubuntu or WSL
+## Physics and methods
+
+The model uses equal-mass hard disks in a two-dimensional box:
+
+- **Elastic collisions:** particle–particle impacts conserve kinetic energy and momentum in the idealized model.
+- **Walls and aperture:** outer boundaries reflect particles; a central divider permits or rejects attempted crossings.
+- **Maxwell's demon:** a simplified speed-dependent gate allows fast particles left-to-right and slow particles right-to-left. The demon's information-processing and reset costs are **not** modeled.
+- **Two-dimensional thermal statistics:** velocities are sampled from Gaussian components, giving the Maxwell–Boltzmann (Rayleigh) *speed* distribution in 2D:
+
+$$
+f(v)=\frac{mv}{k_\mathrm{B}T}\exp\!\left(-\frac{mv^2}{2k_\mathrm{B}T}\right),\qquad v\geq 0.
+$$
+
+- **Numerics:** adaptive ballistic substeps, neighboring-cell collision candidates, overlap correction, and collision impulses restricted to approaching pairs.
+
+The demon is an educational thought experiment, **not a demonstration that the second law of thermodynamics can be violated**.
+
+## Results and diagnostics
+
+These plots were generated with fixed random seeds by [`scripts/generate_artifacts.py`](scripts/generate_artifacts.py). They illustrate thermal sampling and selected numerical observables, rather than establishing research-grade accuracy.
+
+**1. Thermal speed distribution** — sampled particle speeds compared with the theoretical 2D density.
+
+![Histogram of particle speeds compared with the two-dimensional Maxwell-Boltzmann density](assets/speed_distribution.png)
+
+**2. Kinetic energy** — total kinetic energy over the simulated time interval.
+
+![Total kinetic energy versus simulation time](assets/kinetic_energy.png)
+
+**3. Compartment temperatures** — kinetic-temperature estimates for the left and right sides during an idealized demon-gate simulation.
+
+![Estimated left and right regional temperatures versus simulation time](assets/regional_temperature.png)
+
+## Run it on Linux / WSL
 
 ```bash
 sudo apt update
 sudo apt install python3 python3-venv git
 git clone https://github.com/abooban/Project-CBPM.git
 cd Project-CBPM
+
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+
 pytest
 jupyter lab Project.ipynb
 ```
 
-The notebook is intentionally lightweight and has no embedded output. It imports the tested simulation module. To regenerate the GIF and plots, run `python scripts/generate_artifacts.py`.
+Generate fresh plots and the animation with:
 
-## What changed since the original notebook
-
-The original notebook remains in Git history as submitted in 2024. Its saved animation and plot outputs are cleared in this branch to reduce checkout size; the current notebook is a concise entry point to the improved model.
-
-The original implementation missed collisions across grid-cell boundaries, could respond repeatedly to separating overlaps, ignored particle radius at outer boundaries, and applied gate rules based on a particle's side rather than a detected crossing. Its stated speed law and temperature factor were 3-D formulas in a 2-D model. It also contained global-state and initialization inconsistencies. These have been replaced with a small importable simulation module and regression tests. The tests check elastic collision conservation, wall reflection, gate crossing, overlap handling, and bounded long-run stepping; they support those specific properties, not a claim of research-grade accuracy.
-
-## Files
-
-```text
-Project.ipynb                 # short, reproducible notebook entry point
-helium_demon.py               # simulation and 2-D statistical mechanics
-tests/test_helium_demon.py    # lightweight regression tests
-scripts/generate_artifacts.py # deterministic figures and animation
-assets/                       # README visualizations
+```bash
+python scripts/generate_artifacts.py
 ```
+
+The notebook is a lightweight interface to the tested simulation code and intentionally does not embed its original, large saved animations.
+
+## What changed after the coursework submission?
+
+The original 2024 notebook remains accessible through Git history. The later revision:
+
+- Corrected missed collisions between adjacent spatial grid cells and responses to separating particles.
+- Added radius-aware boundaries and crossing-based gate logic, addressing particles becoming trapped or repeatedly reflected.
+- Corrected the speed-density and temperature equations for a **2D** simulation rather than 3D.
+- Separated the numerical model from presentation code and added deterministic tests.
+
+The tests cover conservation in individual collisions, wall reflections, gate behavior, overlap handling, 2D thermal statistics, and bounded long-run stepping. They **do not prove** exact many-particle dynamics or full physical realism.
+
+## Project files
+
+| File | Purpose |
+| --- | --- |
+| [`Project.ipynb`](Project.ipynb) | Notebook entry point |
+| [`helium_demon.py`](helium_demon.py) | Simulation physics and numerical integration |
+| [`scripts/generate_artifacts.py`](scripts/generate_artifacts.py) | Reproducible figures and GIF |
+| [`tests/test_helium_demon.py`](tests/test_helium_demon.py) | Numerical regression tests |
+| [`assets/`](assets/) | Animation and figures |
+| [`requirements.txt`](requirements.txt) | Python dependencies |
+
+---
+
+*Completed 2024 university coursework; numerical implementation and documentation subsequently improved for this portfolio.*
