@@ -8,13 +8,13 @@ This project began as my **2024 course submission**. I later revisited the numer
 
 ## Simulation preview
 
-![Animated 2D helium particles interacting with a central Maxwell's demon gate](assets/simulation.gif)
+![12-second animation of speed-colored 2D helium particles crossing an idealized central gate; compartment temperatures are shown above the chambers](assets/simulation.gif)
 
 [Open the animation at full size](assets/simulation.gif) · [View the simulation source](helium_demon.py) · [View the animation generator](scripts/generate_artifacts.py)
 
-The blue disks represent helium particles moving inside a two-dimensional container. The central divider has a narrow opening; an idealized demon selectively permits crossing according to particle speed and direction. The displayed **left** and **right** temperatures are calculated from the particles currently in each compartment.
+The particles are colored by speed, with the scale at the right. The gold opening marks the selective gate, and the labels above the chambers show their current kinetic temperatures.
 
-**About playback:** This is a short, automatically looping visualization. The current GIF advances **10 simulation time steps per displayed frame** and plays at **20 frames per second**, which can make the movement look too fast. Playback speed is not a physical time scale. The animation is generated from the simulation; it is not a separate hand-drawn visualization.
+The loop has **150 frames at 12.5 FPS** (12 seconds) and advances **2 simulation steps per frame**. Every frame shows the model's actual state after those steps; particles are not interpolated between states. The GIF is a visualization, so its playback clock is not a physical time scale. The generator checks particle bounds, overlaps, motion, and total kinetic-energy drift as it renders.
 
 ## Physics and methods
 
