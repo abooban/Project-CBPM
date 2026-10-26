@@ -1,0 +1,16 @@
+# Local Python and Jupyter artifacts
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary outputs
+*.tmp
+*.log
