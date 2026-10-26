@@ -1,73 +1,56 @@
-# Project CBPM
-### Introduction to Computer-Based Physical Modeling — Final Project
+# Project CBPM · 2-D helium gas
 
-**First-year coursework · International Physics Studies Program (IPSP) · Leipzig University**
+An educational hard-disk simulation of helium atoms, elastic collisions, thermal speeds, and an idealized Maxwell-demon gate. The project began as a **first-year 2024 student submission** for *Introduction to Computer-Based Physical Modeling* in the International Physics Studies Program (IPSP) at Leipzig University. The code and documentation on this branch are a later portfolio improvement; they are not part of the original coursework.
 
-This repository preserves my final project for **Introduction to Computer-Based Physical Modeling**, completed during the first year of the International Physics Studies Program (IPSP) at Leipzig University.
+![Short animation of the 2-D gas and central gate](assets/simulation.gif)
 
-The original submission is a **Jupyter notebook**. This is a *completed course project*, not an ongoing research project or a polished software library.
+## What it demonstrates
 
-## Project at a glance
+- Equal-mass, elastic hard-disk impacts with momentum and kinetic-energy conservation.
+- Radius-aware reflecting box walls and a central aperture. A demon rule acts only when a particle crosses the divider: fast particles go left-to-right and slow particles right-to-left.
+- A reproducible 2-D thermal initialization and the **2-D Maxwell–Boltzmann (Rayleigh) speed density**, `f(v) = m v/(k_B T) exp[-m v²/(2 k_B T)]`.
+- Kinetic temperature from equipartition in two dimensions (`E/N = k_B T` at equilibrium), with center-of-mass motion removed for temperature estimates.
+- Adaptive ballistic substeps, a neighboring-cell broad phase, overlap correction, and collision impulses only for approaching pairs.
 
-| | |
-| --- | --- |
-| **Course** | Introduction to Computer-Based Physical Modeling |
-| **Program** | International Physics Studies Program (IPSP) |
-| **University** | Leipzig University |
-| **Level** | First-year undergraduate |
-| **Format** | Jupyter Notebook |
-| **Status** | Completed coursework |
-| **Original repository upload** | July 2024 |
+The demon is an educational idealization. Its measurement, memory, and reset costs are not modeled, so the temperature sorting does not violate the second law.
 
-## Explore the project
+## Results
 
-**[View the original Jupyter notebook](Project.ipynb)**
+The seed-fixed plots below compare a finite random sample with the theoretical 2-D speed density and track energy and regional temperatures in a gate run.
 
-The notebook is the central project artifact. It is approximately **85 MB** and is tracked with **Git Large File Storage (Git LFS)**, so GitHub may not provide a convenient browser preview.
+| Speed distribution | Total kinetic energy | Regional temperatures |
+|---|---|---|
+| ![2-D speed distribution](assets/speed_distribution.png) | ![Kinetic energy over time](assets/kinetic_energy.png) | ![Regional temperature over time](assets/regional_temperature.png) |
 
-To examine the notebook in full, download the repository with Git LFS and open it with JupyterLab.
-
-### Open on Ubuntu / Linux / WSL
-
-Install the basic tools (if not already installed):
+## Run on Ubuntu or WSL
 
 ```bash
 sudo apt update
-sudo apt install git git-lfs python3 python3-venv
-git lfs install
-```
-
-Clone the repository and open the notebook:
-
-```bash
+sudo apt install python3 python3-venv git
 git clone https://github.com/abooban/Project-CBPM.git
 cd Project-CBPM
-
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install jupyterlab
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+pytest
 jupyter lab Project.ipynb
 ```
 
-This installs **JupyterLab**, the notebook interface. Additional scientific Python packages may be required by individual notebook cells; the original repository does not include a verified dependency list. Consult the imports in the notebook rather than assuming a particular environment.
+The notebook is intentionally lightweight and has no embedded output. It imports the tested simulation module. To regenerate the GIF and plots, run `python scripts/generate_artifacts.py`.
 
-If the notebook is downloaded as a tiny text file beginning with `version https://git-lfs.github.com/spec/v1`, that is only the LFS pointer. Run `git lfs pull` from inside the cloned repository to retrieve the actual notebook.
+## What changed since the original notebook
 
-## Repository contents
+The original notebook remains in Git history as submitted in 2024. Its saved animation and plot outputs are cleared in this branch to reduce checkout size; the current notebook is a concise entry point to the improved model.
+
+The original implementation missed collisions across grid-cell boundaries, could respond repeatedly to separating overlaps, ignored particle radius at outer boundaries, and applied gate rules based on a particle's side rather than a detected crossing. Its stated speed law and temperature factor were 3-D formulas in a 2-D model. It also contained global-state and initialization inconsistencies. These have been replaced with a small importable simulation module and regression tests. The tests check elastic collision conservation, wall reflection, gate crossing, overlap handling, and bounded long-run stepping; they support those specific properties, not a claim of research-grade accuracy.
+
+## Files
 
 ```text
-Project-CBPM/
-├── Project.ipynb       # Original course-project notebook (Git LFS)
-├── .gitattributes      # Git LFS tracking configuration
-└── README.md           # Project introduction and viewing instructions
+Project.ipynb                 # short, reproducible notebook entry point
+helium_demon.py               # simulation and 2-D statistical mechanics
+tests/test_helium_demon.py    # lightweight regression tests
+scripts/generate_artifacts.py # deterministic figures and animation
+assets/                       # README visualizations
 ```
-
-## Context
-
-I originally developed this work as part of my first-year physics coursework. I keep it in my GitHub portfolio as a record of my early experience with programming and computational approaches to physics.
-
-**Scope note:** The notebook is preserved as coursework. No claim is made here that its results constitute peer-reviewed research, a production-ready simulation package, or a reproducible benchmark under current software versions.
-
----
-
-*Original project upload: 2024 · Repository maintained as an academic portfolio archive.*
