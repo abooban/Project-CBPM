@@ -33,7 +33,7 @@ plt.close(fig)
 # Demon run and energy histories, with seeded initial conditions.
 sim = Gas.random(count=55, temperature=300, seed=7)
 dt = 2e-13
-steps = 900
+steps = 4000
 times, energies, left_t, right_t = [], [], [], []
 for k in range(steps):
     sim.step(dt)
@@ -60,13 +60,13 @@ fig.tight_layout()
 fig.savefig(OUT/"regional_temperature.png", bbox_inches="tight")
 plt.close(fig)
 
-# The 12-second loop advances only two model time steps per displayed frame.
+# The 16-second loop advances 20 physical simulation steps per displayed frame.
 # FuncAnimation records the actual Gas state after stepping; it does not tween
 # positions, so particles never receive fabricated paths through a boundary.
 anim_gas = Gas.random(count=65, temperature=300, seed=19)
 fps = 12.5
-frames = 150
-steps_per_frame = 2
+frames = 200
+steps_per_frame = 20
 speed_limit = 3*np.sqrt(2*K_B*300/anim_gas.mass)
 speed_norm = Normalize(vmin=0, vmax=speed_limit, clip=True)
 cmap = plt.get_cmap("plasma")
@@ -100,11 +100,11 @@ sm.set_array([])
 cbar = fig.colorbar(sm, ax=ax, pad=.035, shrink=.82, aspect=28)
 cbar.set_label("Particle speed (m/s)", rotation=90, labelpad=10)
 cbar.outline.set_linewidth(.5)
-left_label = ax.text(.035, .965, "LEFT  ·  -- K", transform=ax.transAxes,
+left_label = ax.text(.035, .965, "LEFT  ·  -- K  ·  n=--", transform=ax.transAxes,
                      va="top", ha="left", color="#173b50", fontsize=10, weight="bold",
                      bbox={"boxstyle":"round,pad=.35", "facecolor":"#eaf5fa", "edgecolor":"#9cc5d6", "alpha":.96},
                      zorder=6)
-right_label = ax.text(.965, .965, "RIGHT  ·  -- K", transform=ax.transAxes,
+right_label = ax.text(.965, .965, "RIGHT  ·  -- K  ·  n=--", transform=ax.transAxes,
                       va="top", ha="right", color="#713d22", fontsize=10, weight="bold",
                       bbox={"boxstyle":"round,pad=.35", "facecolor":"#fff0e5", "edgecolor":"#e5b28e", "alpha":.96},
                       zorder=6)
@@ -134,8 +134,10 @@ def update(frame):
     sc.set_offsets(anim_gas.positions)
     sc.set_array(np.linalg.norm(anim_gas.velocities, axis=1))
     tl, tr = anim_gas.regional_temperatures()
-    left_label.set_text(f"LEFT  ·  {tl:.0f} K" if np.isfinite(tl) else "LEFT  ·  -- K")
-    right_label.set_text(f"RIGHT  ·  {tr:.0f} K" if np.isfinite(tr) else "RIGHT  ·  -- K")
+    left_count = int(np.sum(anim_gas.positions[:, 0] < anim_gas.width/2))
+    right_count = anim_gas.count-left_count
+    left_label.set_text(f"LEFT  ·  {tl:.0f} K  ·  n={left_count}" if np.isfinite(tl) else f"LEFT  ·  -- K  ·  n={left_count}")
+    right_label.set_text(f"RIGHT  ·  {tr:.0f} K  ·  n={right_count}" if np.isfinite(tr) else f"RIGHT  ·  -- K  ·  n={right_count}")
     return sc, left_label, right_label
 
 animation = FuncAnimation(fig, update, frames=frames, interval=1000/fps, blit=True)
